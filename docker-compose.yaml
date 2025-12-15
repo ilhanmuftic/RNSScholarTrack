@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:15
+    container_name: scholartrack_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: scholartrack
+      POSTGRES_PASSWORD: change_me_secure_password
+      POSTGRES_DB: scholartrack
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: scholartrack_backend
+    restart: unless-stopped
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

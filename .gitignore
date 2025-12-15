@@ -1,6 +1,49 @@
-node_modules
-dist
+# Node / Frontend
+node_modules/
+dist/
+*.log
+*.lock
+.vite/
+server/public/
+
+# Python / Django
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+.venv/
+env/
+ENV/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Django specific
+*.log
+*.pot
+*.py[cod]
+__pycache__/
+db.sqlite3
+media/
+staticfiles/
+
+# OS / Editor
 .DS_Store
-server/public
-vite.config.ts.*
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Docker
 *.tar.gz
+docker-compose.override.yml
+.env*
+
+# Vite / TS
+vite.config.ts.*
+*.tsbuildinfo
