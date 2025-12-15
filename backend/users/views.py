@@ -4,6 +4,9 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer, LoginSerializer
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
@@ -25,3 +28,20 @@ class LoginView(generics.GenericAPIView):
             "username": user.username,
             "id": user.id
         })
+
+
+class InfoView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "role": user.role
+        })
+
+
+
+
+

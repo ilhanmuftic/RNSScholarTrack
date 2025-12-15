@@ -22,7 +22,7 @@ export default function Scholars() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: scholars, isLoading, error } = useQuery<ScholarWithStats[]>({
-    queryKey: ["/api/admin/scholars"],
+    queryKey: ["/api/scholars/admin/scholars/"],
   });
 
   useEffect(() => {
