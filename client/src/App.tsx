@@ -18,6 +18,7 @@ import Reports from "@/pages/reports";
 import Settings from "@/pages/settings";
 import SubmitActivity from "@/pages/submit-activity";
 import MyActivities from "@/pages/my-activities";
+import LoginPage from "@/pages/login";
 
 function AdminLayout({ children }: { children: React.ReactNode }) {
   const style = {
@@ -76,6 +77,7 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/login" component={LoginPage} />
         <Route component={Landing} />
       </Switch>
     );
