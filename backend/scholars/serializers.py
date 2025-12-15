@@ -21,8 +21,7 @@ class ActivityCategorySerializer(serializers.ModelSerializer):
 class ActivitySerializer(serializers.ModelSerializer):
     scholar = ScholarSerializer(read_only=True)
     category = ActivityCategorySerializer(read_only=True)
-    reviewer = UserSerializer(read_only=True)
-
+    reviewed_by = UserSerializer(read_only=True)
     class Meta:
         model = Activity
         fields = [
