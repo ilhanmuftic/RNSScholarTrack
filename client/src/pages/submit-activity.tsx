@@ -26,8 +26,8 @@ export default function SubmitActivity() {
   });
 
   const { data: scholar } = useQuery({
-    queryKey: ["/api/scholar/profile/"],
-    queryFn: () => authFetch("/api/scholar/profile/"),
+    queryKey: ["/api/scholars/profile/"],
+    queryFn: () => authFetch("/api/scholars/profile/"),
   });
 
   const form = useForm<InsertActivity>({
@@ -53,7 +53,7 @@ export default function SubmitActivity() {
       if (!scholar?.id) {
         throw new Error("Scholar profile not loaded");
       }
-      await apiRequest("POST", "/api/activities", { ...data, scholarId: scholar.id });
+      await apiRequest("POST", "/api/scholars/activities/", { ...data });
     },
     onSuccess: () => {
       toast({
@@ -189,32 +189,39 @@ export default function SubmitActivity() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} style={{ color: "white" }}>
+
+                    <Select
+                      value={field.value ? String(field.value) : ""}
+                      onValueChange={(value) => field.onChange(Number(value))} // ✅ convert here
+                    >
                       <FormControl>
                         <SelectTrigger data-testid="select-category">
-                          <SelectValue placeholder="Select a category" style={{ color: "white" }} />
+                          <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
                       </FormControl>
+
                       <SelectContent>
                         {categories?.map((category) => (
-                          <SelectItem key={category.id} value={category.name} >
+                          <SelectItem
+                            key={category.id}
+                            value={String(category.id)} // ✅ Select requires string
+                          >
                             {category.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>
-                      Choose the type of volunteer work
-                    </FormDescription>
+
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
+
               <div className="flex gap-3 pt-4">
                 <Button
                   type="submit"
-                  disabled={mutation.isPending || !scholar}
+                  disabled={mutation.isPending}
                   data-testid="button-submit"
                   className="flex-1"
                 >
@@ -223,7 +230,7 @@ export default function SubmitActivity() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setLocation("/")}
+                  onClick={() => setLocation("/scholar")}
                   data-testid="button-cancel"
                 >
                   Cancel
