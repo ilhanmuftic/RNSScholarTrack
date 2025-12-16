@@ -1,180 +1,246 @@
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useLocation, Link } from "wouter";
+import { ArrowLeft } from "lucide-react";
+
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { insertActivitySchema, type InsertActivity, type ActivityCategory } from "@shared/schema";
-import { useLocation } from "wouter";
-import { ArrowLeft } from "lucide-react";
-import { Link } from "wouter";
-import { useEffect } from "react";
-import { authFetch } from "@/hooks/auth-fetch";
+
+/* ----------------------------------
+   Types (local, no shared imports)
+---------------------------------- */
+
+type Category = {
+  id: number;
+  name: string;
+};
+
+type ScholarProfile = {
+  id: number;
+};
+
+type FormData = {
+  description: string;
+  hours: number;
+  activity_date: string;
+  category: number | "";
+};
+
+/* ----------------------------------
+   Helper: authenticated fetch
+---------------------------------- */
+
+async function authFetch(url: string, options: RequestInit = {}) {
+  const token = localStorage.getItem("authToken");
+
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || "Request failed");
+  }
+
+  return res.json();
+}
+
+/* ----------------------------------
+   Component
+---------------------------------- */
 
 export default function SubmitActivity() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const { data: categories } = useQuery<ActivityCategory[]>({
-    queryKey: ["/api/scholars/categories/"],
+  const form = useForm<FormData>({
+    defaultValues: {
+      description: "",
+      hours: 1,
+      activity_date: new Date().toISOString().split("T")[0],
+      category: "",
+    },
+  });
+
+  /* -----------------------------
+     Load categories
+  ----------------------------- */
+
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: ["activity-categories"],
     queryFn: () => authFetch("/api/scholars/categories/"),
   });
 
-  const { data: scholar } = useQuery({
-    queryKey: ["/api/scholars/profile/"],
+  /* -----------------------------
+     Load scholar profile
+  ----------------------------- */
+
+  const { data: scholar } = useQuery<ScholarProfile>({
+    queryKey: ["scholar-profile"],
     queryFn: () => authFetch("/api/scholars/profile/"),
   });
 
-  const form = useForm<InsertActivity>({
-    resolver: zodResolver(insertActivitySchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      hours: 1,
-      activityDate: new Date().toISOString().split('T')[0],
-      categoryId: "",
-      scholarId: "",
-    },
-  });
-
-  useEffect(() => {
-    if (scholar?.id) {
-      form.setValue('scholarId', scholar.id);
-    }
-  }, [scholar, form]);
+  /* -----------------------------
+     Submit mutation
+  ----------------------------- */
 
   const mutation = useMutation({
-    mutationFn: async (data: InsertActivity) => {
+    mutationFn: async (data: FormData) => {
       if (!scholar?.id) {
         throw new Error("Scholar profile not loaded");
       }
-      await apiRequest("POST", "/api/scholars/activities/", { ...data });
+
+      await authFetch("/api/scholars/activities/", {
+        method: "POST",
+        body: JSON.stringify({
+          description: data.description,
+          hours: data.hours,
+          activity_date: data.activity_date,
+          category: data.category,
+        }),
+      });
     },
+
     onSuccess: () => {
       toast({
-        title: "Activity Submitted",
-        description: "Your activity has been submitted for review.",
+        title: "Activity submitted",
+        description: "Your activity is awaiting review.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/scholar/activities/recent"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/scholar/stats"] });
-      setLocation("/");
+      setLocation("/scholar");
     },
+
     onError: (error: Error) => {
       toast({
-        title: "Error",
+        title: "Submission failed",
         description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: InsertActivity) => {
-    mutation.mutate(data);
-  };
+  /* -----------------------------
+     Render
+  ----------------------------- */
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild data-testid="button-back">
+        <Button variant="ghost" size="icon" asChild>
           <Link href="/scholar">
             <ArrowLeft className="w-5 h-5" />
           </Link>
         </Button>
+
         <div>
-          <h1 className="text-3xl font-serif font-semibold text-foreground">Submit Activity</h1>
-          <p className="text-muted-foreground mt-1">Log your volunteer work</p>
+          <h1 className="text-3xl font-serif font-semibold">
+            Submit Activity
+          </h1>
+          <p className="text-muted-foreground">
+            Log your volunteer work
+          </p>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl font-serif">Activity Details</CardTitle>
+          <CardTitle>Activity Details</CardTitle>
           <CardDescription>
-            Provide information about your volunteer activity
+            Provide information about your activity
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Activity Title</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="e.g., Tutored elementary students in math"
-                        {...field}
-                        data-testid="input-title"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
+            <form
+              onSubmit={form.handleSubmit((data) =>
+                mutation.mutate(data)
+              )}
+              className="space-y-6"
+            >
+              {/* Description */}
               <FormField
                 control={form.control}
                 name="description"
+                rules={{ required: "Description is required" }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Describe what you did, who you helped, and the impact of your work..."
-                        className="min-h-32 resize-none"
                         {...field}
-                        data-testid="input-description"
+                        className="min-h-32"
+                        placeholder="Describe what you did..."
                       />
                     </FormControl>
-                    <FormDescription>
-                      Provide detailed information about your volunteer activity
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Date */}
                 <FormField
                   control={form.control}
-                  name="activityDate"
+                  name="activity_date"
+                  rules={{ required: true }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Date</FormLabel>
                       <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                          value={typeof field.value === 'string' ? field.value : new Date(field.value).toISOString().split('T')[0]}
-                          data-testid="input-date"
-                        />
+                        <Input type="date" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
+                {/* Hours */}
                 <FormField
                   control={form.control}
                   name="hours"
+                  rules={{ min: 1 }}
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Hours</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
-                          min="1"
-                          max="24"
+                          min={1}
+                          max={24}
                           {...field}
-                          onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          data-testid="input-hours"
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                         />
                       </FormControl>
                       <FormMessage />
@@ -183,55 +249,57 @@ export default function SubmitActivity() {
                 />
               </div>
 
+              {/* Category */}
               <FormField
                 control={form.control}
-                name="categoryId"
+                name="category"
+                rules={{ required: "Category is required" }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-
                     <Select
                       value={field.value ? String(field.value) : ""}
-                      onValueChange={(value) => field.onChange(Number(value))} // ✅ convert here
+                      onValueChange={(v) =>
+                        field.onChange(Number(v))
+                      }
                     >
                       <FormControl>
-                        <SelectTrigger data-testid="select-category">
-                          <SelectValue placeholder="Select a category" />
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
 
                       <SelectContent>
-                        {categories?.map((category) => (
+                        {categories?.map((c) => (
                           <SelectItem
-                            key={category.id}
-                            value={String(category.id)} // ✅ Select requires string
+                            key={c.id}
+                            value={String(c.id)}
                           >
-                            {category.name}
+                            {c.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-
               <div className="flex gap-3 pt-4">
                 <Button
                   type="submit"
-                  disabled={mutation.isPending}
-                  data-testid="button-submit"
                   className="flex-1"
+                  disabled={mutation.isPending}
                 >
-                  {mutation.isPending ? "Submitting..." : !scholar ? "Loading..." : "Submit Activity"}
+                  {mutation.isPending
+                    ? "Submitting..."
+                    : "Submit Activity"}
                 </Button>
+
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setLocation("/scholar")}
-                  data-testid="button-cancel"
                 >
                   Cancel
                 </Button>
