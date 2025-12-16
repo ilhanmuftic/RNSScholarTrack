@@ -14,17 +14,20 @@ import { useLocation } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
+import { authFetch } from "@/hooks/auth-fetch";
 
 export default function SubmitActivity() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
   const { data: categories } = useQuery<ActivityCategory[]>({
-    queryKey: ["/api/categories"],
+    queryKey: ["/api/scholars/categories/"],
+    queryFn: () => authFetch("/api/scholars/categories/"),
   });
 
   const { data: scholar } = useQuery({
-    queryKey: ["/api/scholar/profile"],
+    queryKey: ["/api/scholar/profile/"],
+    queryFn: () => authFetch("/api/scholar/profile/"),
   });
 
   const form = useForm<InsertActivity>({
@@ -78,7 +81,7 @@ export default function SubmitActivity() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild data-testid="button-back">
-          <Link href="/">
+          <Link href="/scholar">
             <ArrowLeft className="w-5 h-5" />
           </Link>
         </Button>
@@ -186,15 +189,15 @@ export default function SubmitActivity() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} style={{ color: "white" }}>
                       <FormControl>
                         <SelectTrigger data-testid="select-category">
-                          <SelectValue placeholder="Select a category" />
+                          <SelectValue placeholder="Select a category" style={{ color: "white" }} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {categories?.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
+                          <SelectItem key={category.id} value={category.name} >
                             {category.name}
                           </SelectItem>
                         ))}

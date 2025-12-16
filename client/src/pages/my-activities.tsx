@@ -58,7 +58,7 @@ export default function MyActivities() {
               <ActivityIcon className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground mb-4">No activities yet</p>
               <Button asChild variant="outline" data-testid="button-add-first-activity">
-                <Link href="/submit-activity">Submit Your First Activity</Link>
+                <Link href="/scholar/submit-activity">Submit Your First Activity</Link>
               </Button>
             </div>
           ) : (

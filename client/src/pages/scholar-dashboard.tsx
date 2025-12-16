@@ -10,12 +10,14 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { Activity as ActivityType, Scholar, ScholarStats } from "@shared/schema";
 import { Link } from "wouter";
+import { authFetch } from "@/hooks/auth-fetch";
 
 export default function ScholarDashboard() {
   const { toast } = useToast();
-  
+
   const { data: scholar, isLoading: scholarLoading, error: scholarError } = useQuery<Scholar>({
-    queryKey: ["/api/scholar/profile"],
+    queryKey: ["/api/scholars/profile/"],
+    queryFn: () => authFetch("/api/scholars/profile/"),
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery<ScholarStats>({
@@ -96,7 +98,7 @@ export default function ScholarDashboard() {
             <CardDescription className="mt-1">Log your volunteer work</CardDescription>
           </div>
           <Button asChild data-testid="button-add-activity">
-            <Link href="/submit-activity">
+            <Link href="/scholar/submit-activity">
               <Activity className="w-4 h-4 mr-2" />
               Add Activity
             </Link>
@@ -119,7 +121,7 @@ export default function ScholarDashboard() {
               <Activity className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground mb-4">No activities yet</p>
               <Button asChild variant="outline" data-testid="button-add-first-activity">
-                <Link href="/submit-activity">Submit Your First Activity</Link>
+                <Link href="/scholar/submit-activity">Submit Your First Activity</Link>
               </Button>
             </div>
           ) : (
