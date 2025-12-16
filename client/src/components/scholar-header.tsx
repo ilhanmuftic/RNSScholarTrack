@@ -8,12 +8,14 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import type { ScholarStats } from "@shared/schema";
+import { authFetch } from "@/hooks/auth-fetch";
 
 export function ScholarHeader() {
   const { user } = useAuth();
 
   const { data: stats } = useQuery<ScholarStats>({
-    queryKey: ["/api/scholar/stats"],
+    queryKey: ["/api/scholars/scholar/stats/"],
+    queryFn: () => authFetch("/api/scholars/scholar/stats/"),
   });
 
   return (

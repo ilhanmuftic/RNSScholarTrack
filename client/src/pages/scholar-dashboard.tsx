@@ -21,11 +21,13 @@ export default function ScholarDashboard() {
   });
 
   const { data: stats, isLoading: statsLoading } = useQuery<ScholarStats>({
-    queryKey: ["/api/scholar/stats"],
+    queryKey: ["/api/scholars/scholar/stats/"],
+    queryFn: () => authFetch("/api/scholars/scholar/stats/"),
   });
 
   const { data: recentActivities, isLoading: activitiesLoading } = useQuery<ActivityType[]>({
-    queryKey: ["/api/scholar/activities/recent"],
+    queryKey: ["/api/scholars/scholar/activities/"],
+    queryFn: () => authFetch("/api/scholars/scholar/activities/"),
   });
 
   useEffect(() => {
@@ -36,7 +38,7 @@ export default function ScholarDashboard() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/login";
       }, 500);
     }
   }, [scholarError, toast]);

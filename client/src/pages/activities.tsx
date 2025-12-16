@@ -77,15 +77,15 @@ export default function Activities() {
 
   const rejectMutation = useMutation({
     mutationFn: async ({ id, comment }: { id: string; comment: string }) => {
-      await apiRequest("POST", `/api/admin/activities/${id}/reject`, { comment });
+      await apiRequest("POST", `/api/admin/activities/${id}/reject/`, { comment });
     },
     onSuccess: () => {
       toast({
         title: "Activity Rejected",
         description: "The activity has been rejected.",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/activities"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/activities/"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats/"] });
       setSelectedActivity(null);
       setReviewComment("");
     },
