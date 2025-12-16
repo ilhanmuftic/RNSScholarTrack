@@ -29,7 +29,7 @@ export default function Landing() {
           </p>
           <Button
             size="lg"
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => window.location.href = '/login'}
             className="text-lg px-8"
             data-testid="button-login"
           >
@@ -87,28 +87,13 @@ export default function Landing() {
           </Card>
         </div>
 
-        <div className="bg-accent rounded-xl p-8 text-center">
-          <h3 className="text-2xl font-serif font-semibold text-accent-foreground mb-3">
-            Ready to make an impact?
-          </h3>
-          <p className="text-muted-foreground mb-6">
-            Join our community of scholars making a difference through volunteer service.
-          </p>
-          <Button
-            variant="default"
-            size="lg"
-            onClick={() => window.location.href = '/api/login'}
-            data-testid="button-login-footer"
-          >
-            Get Started
-          </Button>
-        </div>
+
       </main>
 
       <footer className="border-t border-border mt-16">
         <div className="max-w-7xl mx-auto px-6 py-8">
           <p className="text-center text-sm text-muted-foreground">
-            © 2024 Ruku na srce. Supporting students through volunteer scholarships.
+            Powered by STRINTECH
           </p>
         </div>
       </footer>

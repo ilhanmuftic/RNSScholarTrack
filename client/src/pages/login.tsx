@@ -1,5 +1,19 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
+import { Heart, LogIn } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type FormState = {
     username: string;
@@ -15,25 +29,23 @@ export default function LoginPage(): JSX.Element {
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [location, setLocation] = useLocation();
-
-    const validate = () => {
-        if (!form.password) return "Password is required.";
-        return null;
-    };
+    const [, setLocation] = useLocation();
 
     const handleChange =
         (key: keyof FormState) =>
             (e: React.ChangeEvent<HTMLInputElement>) => {
-                setForm((s) => ({ ...s, [key]: key === "showPassword" ? e.target.checked : e.target.value }));
+                setForm((s) => ({
+                    ...s,
+                    [key]: key === "showPassword" ? e.target.checked : e.target.value,
+                }));
                 setError(null);
             };
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const clientError = validate();
-        if (clientError) {
-            setError(clientError);
+
+        if (!form.password) {
+            setError("Password is required.");
             return;
         }
 
@@ -41,11 +53,13 @@ export default function LoginPage(): JSX.Element {
         setError(null);
 
         try {
-            // Replace endpoint with your real auth endpoint
             const res = await fetch("/api/users/login/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username: form.username, password: form.password }),
+                body: JSON.stringify({
+                    username: form.username,
+                    password: form.password,
+                }),
             });
 
             if (!res.ok) {
@@ -54,10 +68,11 @@ export default function LoginPage(): JSX.Element {
             }
 
             const data = await res.json();
-            // Assume server returns { token: string, user?: {...} }
             if (data.access) {
                 localStorage.setItem("authToken", data.access);
-                setLocation("/");
+                if (data.role === "admin") setLocation("/admin");
+                else if (data.role === "scholar") setLocation("/scholar");
+                else setLocation("/");
             } else {
                 throw new Error("Invalid server response");
             }
@@ -69,82 +84,112 @@ export default function LoginPage(): JSX.Element {
     };
 
     return (
-        <div style={{ maxWidth: 420, margin: "6rem auto", padding: 24, border: "1px solid #e6e6e6", borderRadius: 8 }}>
-            <h2 style={{ marginBottom: 8 }}>Sign in</h2>
-            <p style={{ marginTop: 0, color: "#666", marginBottom: 16 }}>Enter your credentials to continue.</p>
-
-            <form onSubmit={handleSubmit} noValidate>
-                <label style={{ display: "block", marginBottom: 8 }}>
-                    <span style={{ display: "block", fontSize: 13, marginBottom: 6 }}>username</span>
-                    <input
-                        type="text"
-                        value={form.username}
-                        onChange={handleChange("username")}
-                        placeholder="Username"
-                        required
-                        style={{ width: "100%", padding: "8px 10px", borderRadius: 4, border: "1px solid #ccc" }}
-                        disabled={loading}
-                    />
-                </label>
-
-                <label style={{ display: "block", marginBottom: 8 }}>
-                    <span style={{ display: "block", fontSize: 13, marginBottom: 6 }}>Password</span>
-                    <input
-                        type={form.showPassword ? "text" : "password"}
-                        value={form.password}
-                        onChange={handleChange("password")}
-                        placeholder="••••••••"
-                        required
-                        style={{ width: "100%", padding: "8px 10px", borderRadius: 4, border: "1px solid #ccc" }}
-                        disabled={loading}
-                    />
-                </label>
-
-                <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                    <input type="checkbox" checked={form.showPassword} onChange={handleChange("showPassword")} disabled={loading} />
-                    <span style={{ fontSize: 13, color: "#444" }}>Show password</span>
-                </label>
-
-                {error && (
-                    <div style={{ marginBottom: 12, color: "#b00020", fontSize: 14 }}>
-                        {error}
+        <div className="min-h-screen bg-background flex flex-col">
+            {/* Header */}
+            <header className="border-b border-border">
+                <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Heart className="w-8 h-8 text-primary" />
+                        <div>
+                            <h1 className="text-xl font-serif font-bold text-foreground">
+                                Ruku na srce
+                            </h1>
+                            <p className="text-xs text-muted-foreground">
+                                Volunteer Scholarship Program
+                            </p>
+                        </div>
                     </div>
-                )}
-
-                <div style={{ display: "flex", gap: 8 }}>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            flex: 1,
-                            padding: "10px 14px",
-                            background: "#0366d6",
-                            color: "white",
-                            border: "none",
-                            borderRadius: 4,
-                            cursor: loading ? "not-allowed" : "pointer",
-                        }}
-                    >
-                        {loading ? "Signing in..." : "Sign in"}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => setLocation("/register")}
-                        disabled={loading}
-                        style={{
-                            padding: "10px 14px",
-                            background: "#f3f4f6",
-                            color: "#111",
-                            border: "1px solid #ddd",
-                            borderRadius: 4,
-                            cursor: loading ? "not-allowed" : "pointer",
-                        }}
-                    >
-                        Create account
-                    </button>
+                    <ThemeToggle />
                 </div>
-            </form>
+            </header>
+
+            {/* Content */}
+            <main className="flex-1 flex items-center justify-center px-6">
+                <Card className="w-full max-w-md">
+                    <CardHeader>
+                        <CardTitle className="text-2xl font-serif flex items-center gap-2">
+                            <LogIn className="w-5 h-5 text-primary" />
+                            Sign in
+                        </CardTitle>
+                        <CardDescription>
+                            Enter your credentials to continue.
+                        </CardDescription>
+                    </CardHeader>
+
+                    <CardContent>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="username">Username</Label>
+                                <Input
+                                    id="username"
+                                    placeholder="Your username"
+                                    value={form.username}
+                                    onChange={handleChange("username")}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="password">Password</Label>
+                                <Input
+                                    id="password"
+                                    type={form.showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    value={form.password}
+                                    onChange={handleChange("password")}
+                                    disabled={loading}
+                                />
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="showPassword"
+                                    checked={form.showPassword}
+                                    onCheckedChange={(checked) =>
+                                        setForm((s) => ({ ...s, showPassword: !!checked }))
+                                    }
+                                    disabled={loading}
+                                />
+                                <Label
+                                    htmlFor="showPassword"
+                                    className="text-sm text-muted-foreground"
+                                >
+                                    Show password
+                                </Label>
+                            </div>
+
+                            {error && (
+                                <p className="text-sm text-destructive">{error}</p>
+                            )}
+
+                            <div className="flex gap-2 pt-2">
+                                <Button type="submit" className="flex-1" disabled={loading}>
+                                    {loading ? "Signing in..." : "Sign in"}
+                                </Button>
+
+                                {/* TODO Enable when implemented creating account */}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setLocation("/register")}
+                                    disabled={true}
+                                >
+                                    Create account
+                                </Button>
+                            </div>
+                        </form>
+                    </CardContent>
+                </Card>
+            </main>
+
+            {/* Footer */}
+            <footer className="border-t border-border">
+                <div className="max-w-7xl mx-auto px-6 py-6">
+                    <p className="text-center text-sm text-muted-foreground">
+                        Powered by STRINTECH
+                    </p>
+                </div>
+            </footer>
         </div>
     );
 }

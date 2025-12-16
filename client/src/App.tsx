@@ -87,11 +87,11 @@ function Router() {
     return (
       <AdminLayout>
         <Switch>
-          <Route path="/" component={AdminDashboard} />
-          <Route path="/scholars" component={Scholars} />
-          <Route path="/activities" component={Activities} />
-          <Route path="/reports" component={Reports} />
-          <Route path="/settings" component={Settings} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/scholars" component={Scholars} />
+          <Route path="/admin/activities" component={Activities} />
+          <Route path="/admin/reports" component={Reports} />
+          <Route path="/admin/settings" component={Settings} />
           <Route component={NotFound} />
         </Switch>
       </AdminLayout>
@@ -102,9 +102,9 @@ function Router() {
     return (
       <ScholarLayout>
         <Switch>
-          <Route path="/" component={ScholarDashboard} />
-          <Route path="/submit-activity" component={SubmitActivity} />
-          <Route path="/my-activities" component={MyActivities} />
+          <Route path="/scholar" component={ScholarDashboard} />
+          <Route path="/scholar/submit-activity" component={SubmitActivity} />
+          <Route path="/scholar/my-activities" component={MyActivities} />
           <Route component={NotFound} />
         </Switch>
       </ScholarLayout>

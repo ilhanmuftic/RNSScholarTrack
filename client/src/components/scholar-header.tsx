@@ -78,7 +78,10 @@ export function ScholarHeader() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => window.location.href = '/api/logout'}
+                  onClick={() => {
+                    localStorage.removeItem("authToken");
+                    window.location.href = "/login";
+                  }}
                   className="cursor-pointer"
                   data-testid="menu-item-logout"
                 >

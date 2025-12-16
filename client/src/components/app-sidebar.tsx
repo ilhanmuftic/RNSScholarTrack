@@ -19,27 +19,27 @@ import { Button } from "@/components/ui/button";
 const menuItems = [
   {
     title: "Dashboard",
-    url: "/",
+    url: "/admin",
     icon: Home,
   },
   {
     title: "Scholars",
-    url: "/scholars",
+    url: "/admin/scholars",
     icon: Users,
   },
   {
     title: "Activities",
-    url: "/activities",
+    url: "/admin/activities",
     icon: Activity,
   },
   {
     title: "Reports",
-    url: "/reports",
+    url: "/admin/reports",
     icon: FileText,
   },
   {
     title: "Settings",
-    url: "/settings",
+    url: "/admin/settings",
     icon: Settings,
   },
 ];
@@ -53,7 +53,7 @@ export function AppSidebar() {
       <SidebarContent>
         <div className="p-6 border-b border-sidebar-border">
           <h2 className="text-lg font-serif font-semibold text-sidebar-foreground">Ruku na srce</h2>
-          <p className="text-xs text-muted-foreground mt-1">Volunteer Tracking</p>
+          <p className="text-xs text-muted-foreground mt-1">Scholar Tracking</p>
         </div>
         <SidebarGroup>
           <SidebarGroupLabel>Menu</SidebarGroupLabel>
@@ -89,7 +89,10 @@ export function AppSidebar() {
             variant="outline"
             size="sm"
             className="w-full"
-            onClick={() => window.location.href = '/api/logout'}
+            onClick={() => {
+              localStorage.removeItem("authToken");
+              window.location.href = "/login";
+            }}
             data-testid="button-logout"
           >
             <LogOut className="w-4 h-4 mr-2" />
