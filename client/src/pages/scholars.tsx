@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import type { ScholarWithUser, ScholarStats } from "@shared/schema";
+import { authFetch } from "@/hooks/auth-fetch";
 
 interface ScholarWithStats extends ScholarWithUser {
   stats: ScholarStats;
@@ -23,6 +24,8 @@ export default function Scholars() {
 
   const { data: scholars, isLoading, error } = useQuery<ScholarWithStats[]>({
     queryKey: ["/api/scholars/admin/scholars/"],
+    queryFn: () => authFetch("/api/scholars/admin/scholars/"),
+
   });
 
   useEffect(() => {
@@ -39,10 +42,10 @@ export default function Scholars() {
   }, [error, toast]);
 
   const filteredScholars = scholars?.filter((scholar) => {
-    const fullName = getFullName(scholar.user.firstName, scholar.user.lastName).toLowerCase();
-    const scholarId = scholar.scholarId.toLowerCase();
-    const query = searchQuery.toLowerCase();
-    return fullName.includes(query) || scholarId.includes(query) || scholar.user.email?.toLowerCase().includes(query);
+    const fullName = getFullName(scholar.user.firstName, scholar.user.lastName)?.toLowerCase();
+    const scholarId = scholar.scholarId?.toLowerCase();
+    const query = searchQuery?.toLowerCase() || "";
+    return fullName?.includes(query) || scholarId?.includes(query) || scholar.user.email?.includes(query);
   });
 
   return (
